@@ -1,27 +1,21 @@
-# Use a Node.js base image
-FROM node:20-alpine
-
-# Set the working directory inside the container
+FROM node:20-alpine AS build
 WORKDIR /usr/src/app
-
-# Copy package.json and package-lock.json for dependency installation
 COPY package*.json ./
-
-# Install all dependencies (including Prisma CLI)
-RUN npm install
-
-# Copy the rest of the app
+RUN npm ci
 COPY . .
+RUN npm run build && npm prune --omit=dev
 
-# Build the Remix app (this generates the `build` directory)
-RUN npm run build
-
-# Expose the port the app will run on
+FROM node:20-alpine
+WORKDIR /usr/src/app
+ENV NODE_ENV=production \
+    PORT=3000 \
+    DATA_DIR=/data
+COPY --from=build /usr/src/app/package*.json ./
+COPY --from=build /usr/src/app/node_modules ./node_modules
+COPY --from=build /usr/src/app/build ./build
+COPY --from=build /usr/src/app/public ./public
+RUN mkdir -p /data && chown node:node /data
+USER node
+VOLUME /data
 EXPOSE 3000
-
-# Set the NODE_ENV environment variable to production
-# ENV NODE_ENV=production
-# ENV API_URL=https://backend.ahmad-koye.com
-
-# Start the Remix app in production mode using remix-serve
 CMD ["npm", "start"]

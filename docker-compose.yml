@@ -1,19 +1,15 @@
 services:
-  app:
-    container_name: ${APP_INSTANCE_NAME}-${NODE_ENV}
-    build:
-      context: ./
-      dockerfile: Dockerfile
-    networks:
-      - dokploy-network
+  website:
+    container_name: ahmadkoye-website
+    build: .
+    restart: unless-stopped
     environment:
-      - NODE_ENV=${NODE_ENV}
-      - APP_INSTANCE_NAME=${APP_INSTANCE_NAME}
-      - API_URL=${API_URL}
-      - PORT=3000
-    labels:
-      - traefik.enable=true
+      - SYNC_TOKEN=${SYNC_TOKEN}
+    volumes:
+      # The synced book list lives here and survives rebuilds and restarts.
+      - catalog-data:/data
+    ports:
+      - '127.0.0.1:3000:3000'
 
-networks:
-  dokploy-network:
-    external: true
+volumes:
+  catalog-data:

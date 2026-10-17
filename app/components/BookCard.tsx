@@ -1,70 +1,105 @@
-import BookCover from '~/assets/BookCover';
-import { categoryColors, DEFAULT_CATEGORY_COLOR } from '~/shared/general';
+import { Link } from '@remix-run/react';
+import { Check, Plus } from 'lucide-react';
+import { BookCover } from '~/components/BookCover';
+import { useMyList } from '~/lib/myList';
+import { formatPrice } from '~/lib/text';
+import { cn } from '~/lib/utils';
 
-type Book = {
-  id: string;
+export type CardBook = {
+  id: number;
   name: string;
-  author: string;
-  translator: string;
+  author: string | null;
+  translator: string | null;
   price: number;
-  category: { id: number; name: string };
-  cover: string | null;
+  available: boolean;
+  category_id: number;
 };
 
-export function BookCard({ book }: { book: Book }) {
-  const categoryColor = categoryColors[book.category.id] ?? DEFAULT_CATEGORY_COLOR;
+export function AvailabilityBadge({ available, className }: { available: boolean; className?: string }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium',
+        available ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground',
+        className,
+      )}
+    >
+      <span className={cn('h-1.5 w-1.5 rounded-full', available ? 'bg-success' : 'bg-muted-foreground/60')} />
+      {available ? 'بەردەستە' : 'نەماوە'}
+    </span>
+  );
+}
+
+export function AddToListButton({ book, compact = false }: { book: CardBook; compact?: boolean }) {
+  const list = useMyList();
+  const inList = list.ready && list.has(book.id);
 
   return (
-    <div className="group bg-white rounded-xl overflow-hidden border border-stone-200 hover:border-amber-400 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full">
-      {/* Cover */}
-      <div className="relative overflow-hidden bg-stone-100 flex-shrink-0 h-56">
-        <span className="absolute top-2.5 right-2.5 z-10 bg-stone-900/75 backdrop-blur-sm text-xs font-medium px-2.5 py-1 rounded-md text-amber-200">
-          {book.category.name}
-        </span>
-        {book.cover ? (
-          <img
-            src={book.cover}
-            alt={`${book.name} cover`}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <div className="w-full h-full group-hover:scale-105 transition-transform duration-500">
-            <BookCover
-              title={book.name}
-              color={categoryColor}
-              width="100%"
-              height="100%"
-            />
-          </div>
-        )}
-      </div>
+    <button
+      type="button"
+      onClick={() => list.toggle({ id: book.id, name: book.name, author: book.author, price: book.price })}
+      aria-pressed={inList}
+      aria-label={inList ? 'لابردن لە لیستەکەم' : 'زیادکردن بۆ لیستەکەم'}
+      className={cn(
+        'inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full border text-sm font-medium transition-colors',
+        compact ? 'h-9 w-9' : 'h-10 px-4',
+        inList
+          ? 'border-primary bg-primary text-primary-foreground'
+          : 'border-border bg-card text-foreground hover:border-primary hover:text-primary',
+      )}
+    >
+      {inList ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+      {!compact && (inList ? 'لە لیستەکەمدایە' : 'زیادکردن بۆ لیست')}
+    </button>
+  );
+}
 
-      {/* Content */}
-      <div className="p-4 flex flex-col flex-1">
-        <h3 className="font-bold text-stone-900 text-base leading-snug mb-3 line-clamp-2">
-          {book.name}
+export function BookCard({ book }: { book: CardBook }) {
+  return (
+    <article className="group flex h-full flex-col">
+      <Link to={`/books/${book.id}`} prefetch="intent" className="block rounded-md" tabIndex={-1}>
+        <BookCover
+          id={book.id}
+          title={book.name}
+          author={book.author}
+          categoryId={book.category_id}
+          className={cn('transition-transform duration-300 group-hover:-translate-y-1', !book.available && 'opacity-60 saturate-50')}
+        />
+      </Link>
+      <div className="flex flex-1 flex-col pt-3">
+        <h3 className="font-sans text-[0.95rem] font-semibold leading-snug">
+          <Link to={`/books/${book.id}`} prefetch="intent" className="line-clamp-2 hover:text-primary">
+            {book.name}
+          </Link>
         </h3>
-
-        <div className="space-y-1.5 flex-1">
-          <div className="flex items-center gap-2 overflow-hidden">
-            <span className="text-stone-400 shrink-0 text-xs">نووسەر:</span>
-            <span className="text-stone-700 text-sm font-medium truncate">{book.author}</span>
+        {book.author && (
+          <Link
+            to={`/books?author=${encodeURIComponent(book.author)}`}
+            className="mt-1 truncate text-sm text-muted-foreground hover:text-foreground"
+          >
+            {book.author}
+          </Link>
+        )}
+        <div className="mt-auto flex items-end justify-between gap-2 pt-3">
+          <div>
+            <p className="text-base font-bold tabular-nums">
+              {formatPrice(book.price)} <span className="text-xs font-normal text-muted-foreground">دینار</span>
+            </p>
+            <AvailabilityBadge available={book.available} className="mt-1" />
           </div>
-          {book.translator && (
-            <div className="flex items-center gap-2 overflow-hidden">
-              <span className="text-stone-400 shrink-0 text-xs">وەرگێڕ:</span>
-              <span className="text-stone-600 text-sm truncate">{book.translator}</span>
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-baseline justify-between pt-3 mt-3 border-t border-stone-100">
-          <span className="font-bold text-amber-700 text-lg tabular-nums">
-            {book.price.toLocaleString('en-US')}
-          </span>
-          <span className="text-stone-400 text-xs">دینار</span>
+          <AddToListButton book={book} compact />
         </div>
       </div>
+    </article>
+  );
+}
+
+export function BookGrid({ books }: { books: CardBook[] }) {
+  return (
+    <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+      {books.map((book) => (
+        <BookCard key={book.id} book={book} />
+      ))}
     </div>
   );
 }

@@ -18,8 +18,8 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        carlito: ['"Carlito"', 'sans-serif'],
-        arabic: ['"Noto Naskh Arabic"', 'sans-serif'],
+        sans: ['"Noto Sans Arabic"', 'system-ui', 'sans-serif'],
+        display: ['"Noto Kufi Arabic"', '"Noto Sans Arabic"', 'sans-serif'],
       },
       colors: {
         border: 'hsl(var(--border))',
@@ -43,6 +43,11 @@ module.exports = {
           DEFAULT: 'hsl(var(--muted))',
           foreground: 'hsl(var(--muted-foreground))',
         },
+        highlight: {
+          DEFAULT: 'hsl(var(--highlight))',
+          foreground: 'hsl(var(--highlight-foreground))',
+        },
+        success: 'hsl(var(--success))',
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',

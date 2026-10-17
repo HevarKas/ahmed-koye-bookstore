@@ -2,67 +2,78 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Paper & ink: warm paper background, deep green ink, terracotta highlight. */
 @layer base {
   :root {
-    --background: 40 30% 96%;
-    --foreground: 25 40% 8%;
+    --background: 40 45% 96%;
+    --foreground: 160 15% 12%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 25 40% 8%;
+    --card: 40 60% 99%;
+    --card-foreground: 160 15% 12%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 25 40% 8%;
+    --popover: 40 60% 99%;
+    --popover-foreground: 160 15% 12%;
 
-    --primary: 36 62% 42%;
-    --primary-foreground: 40 100% 97%;
+    --primary: 161 42% 22%;
+    --primary-foreground: 40 60% 97%;
 
-    --secondary: 38 30% 90%;
-    --secondary-foreground: 25 40% 20%;
+    --highlight: 17 60% 46%;
+    --highlight-foreground: 40 60% 98%;
 
-    --muted: 38 20% 93%;
-    --muted-foreground: 25 15% 46%;
+    --success: 152 55% 32%;
 
-    --accent: 38 30% 90%;
-    --accent-foreground: 25 40% 20%;
+    --secondary: 38 35% 90%;
+    --secondary-foreground: 160 15% 18%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 40 100% 97%;
+    --muted: 38 30% 92%;
+    --muted-foreground: 160 6% 40%;
 
-    --border: 35 18% 84%;
-    --input: 35 18% 84%;
-    --ring: 36 62% 42%;
+    --accent: 38 35% 90%;
+    --accent-foreground: 160 15% 18%;
 
-    --radius: 0.75rem;
+    --destructive: 0 70% 48%;
+    --destructive-foreground: 40 60% 98%;
+
+    --border: 36 22% 83%;
+    --input: 36 22% 80%;
+    --ring: 161 42% 30%;
+
+    --radius: 0.85rem;
   }
 
   .dark {
-    --background: 25 20% 8%;
-    --foreground: 38 25% 93%;
+    --background: 160 12% 7%;
+    --foreground: 40 25% 92%;
 
-    --card: 25 18% 11%;
-    --card-foreground: 38 25% 93%;
+    --card: 160 10% 10%;
+    --card-foreground: 40 25% 92%;
 
-    --popover: 25 18% 11%;
-    --popover-foreground: 38 25% 93%;
+    --popover: 160 10% 10%;
+    --popover-foreground: 40 25% 92%;
 
-    --primary: 36 68% 52%;
-    --primary-foreground: 25 40% 8%;
+    --primary: 152 38% 62%;
+    --primary-foreground: 160 20% 8%;
 
-    --secondary: 25 15% 18%;
-    --secondary-foreground: 38 25% 93%;
+    --highlight: 18 72% 64%;
+    --highlight-foreground: 160 20% 8%;
 
-    --muted: 25 15% 18%;
-    --muted-foreground: 35 12% 62%;
+    --success: 150 45% 58%;
 
-    --accent: 25 15% 18%;
-    --accent-foreground: 38 25% 93%;
+    --secondary: 160 8% 16%;
+    --secondary-foreground: 40 25% 92%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 40 100% 97%;
+    --muted: 160 8% 14%;
+    --muted-foreground: 40 8% 64%;
 
-    --border: 25 15% 22%;
-    --input: 25 15% 22%;
-    --ring: 36 68% 52%;
+    --accent: 160 8% 16%;
+    --accent-foreground: 40 25% 92%;
+
+    --destructive: 0 62% 55%;
+    --destructive-foreground: 40 60% 98%;
+
+    --border: 160 8% 20%;
+    --input: 160 8% 24%;
+    --ring: 152 38% 62%;
   }
 }
 
@@ -70,11 +81,44 @@
   * {
     @apply border-border;
   }
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'Noto Naskh Arabic', 'Carlito', sans-serif;
+  html {
+    -webkit-tap-highlight-color: transparent;
   }
-  .rtl {
-    direction: rtl;
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: 'ss01';
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border bg-card px-3.5 py-1.5 text-sm text-foreground/80 transition-colors hover:border-primary/50 hover:text-foreground;
+  }
+  .chip-active {
+    @apply border-primary bg-primary text-primary-foreground hover:text-primary-foreground;
+  }
+  .paper-texture {
+    background-image: radial-gradient(hsl(var(--foreground) / 0.035) 1px, transparent 1px);
+    background-size: 14px 14px;
+  }
+}
+
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }
