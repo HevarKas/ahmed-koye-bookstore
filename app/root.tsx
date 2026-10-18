@@ -17,6 +17,7 @@ import { SiteFooter } from '~/components/SiteFooter';
 import { SiteHeader } from '~/components/SiteHeader';
 import { getMeta } from '~/lib/catalog.server';
 import { MyListProvider } from '~/lib/myList';
+import { PwaSupport } from '~/components/PwaSupport';
 import { SITE_URL, STORE } from '~/shared/store';
 
 export const meta: MetaFunction = () => [
@@ -29,11 +30,15 @@ export const meta: MetaFunction = () => [
 
 export const links: LinksFunction = () => [
   { rel: 'icon', href: '/favicon.ico' },
+  { rel: 'manifest', href: '/manifest.webmanifest' },
+  { rel: 'apple-touch-icon', href: '/icons/apple-touch-icon.png' },
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
   { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
   {
     rel: 'stylesheet',
     href: 'https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@500;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap',
+    // CORS so the service worker can keep a copy for offline use.
+    crossOrigin: 'anonymous',
   },
 ];
 
@@ -52,6 +57,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#1F4D3F" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="ئەحمەد کۆیی" />
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <Meta />
         <Links />
@@ -61,6 +70,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <SiteHeader />
           <main className="flex-1">{children}</main>
           <SiteFooter updatedAt={data?.updatedAt ?? null} />
+          <PwaSupport />
         </MyListProvider>
         <ScrollRestoration />
         <Scripts />
