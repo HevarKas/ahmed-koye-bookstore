@@ -1,6 +1,7 @@
+# Production setup on the server. Run with: docker compose -p ahmadkoye --env-file ../.env up -d --build
+# (the GitHub deploy workflow does this automatically on every push to main).
 services:
   website:
-    container_name: ahmadkoye-website
     build: .
     restart: unless-stopped
     environment:
@@ -8,8 +9,22 @@ services:
     volumes:
       # The synced book list lives here and survives rebuilds and restarts.
       - catalog-data:/data
+
+  caddy:
+    image: caddy:2.8.4-alpine
+    restart: unless-stopped
     ports:
-      - '127.0.0.1:3000:3000'
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - website
 
 volumes:
   catalog-data:
+  caddy-data:
+  caddy-config:

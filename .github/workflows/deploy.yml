@@ -1,0 +1,57 @@
+name: Deploy website
+
+# Every push to main updates https://ahmadkoye.com. Can also be started by hand from the Actions tab.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TARGET: root@${{ secrets.DEPLOY_HOST }}
+      DIR: /opt/ahmadkoye-website
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Prepare server (first time only)
+        run: |
+          ssh "$TARGET" 'set -e
+            command -v docker >/dev/null || curl -fsSL https://get.docker.com | sh
+            mkdir -p '"$DIR"'
+            # The sync secret is created once on the server and never printed or committed.
+            if [ ! -f '"$DIR"'/.env ]; then
+              echo "SYNC_TOKEN=$(openssl rand -hex 32)" > '"$DIR"'/.env
+              chmod 600 '"$DIR"'/.env
+            fi'
+
+      - name: Upload code
+        run: |
+          tar czf /tmp/site.tgz --exclude=.git --exclude=node_modules --exclude=build --exclude=data .
+          ssh "$TARGET" "rm -rf $DIR/app.new && mkdir -p $DIR/app.new"
+          ssh "$TARGET" "tar xzf - -C $DIR/app.new" < /tmp/site.tgz
+          ssh "$TARGET" "rm -rf $DIR/app.old && { [ ! -d $DIR/app ] || mv $DIR/app $DIR/app.old; } && mv $DIR/app.new $DIR/app"
+
+      - name: Build and restart
+        run: |
+          ssh "$TARGET" "cd $DIR/app && docker compose -p ahmadkoye --env-file ../.env up -d --build --remove-orphans && docker image prune -f"
+
+      - name: Check the site answers
+        run: |
+          ssh "$TARGET" 'cd '"$DIR"'/app && for i in $(seq 1 30); do
+              docker compose -p ahmadkoye exec -T website wget -qO- http://127.0.0.1:3000/api/status && exit 0
+              sleep 2
+            done; docker compose -p ahmadkoye logs --tail 50 website; exit 1'

@@ -1,0 +1,9 @@
+# Caddy gets and renews the HTTPS certificate automatically.
+ahmadkoye.com {
+	encode gzip zstd
+	reverse_proxy website:3000
+}
+
+www.ahmadkoye.com {
+	redir https://ahmadkoye.com{uri} permanent
+}

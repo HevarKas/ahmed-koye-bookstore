@@ -1,5 +1,0 @@
-# Caddy gets HTTPS certificates automatically.
-ahmadkoye.com, www.ahmadkoye.com {
-	encode gzip zstd
-	reverse_proxy 127.0.0.1:3000
-}
