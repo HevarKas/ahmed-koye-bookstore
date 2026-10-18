@@ -47,11 +47,11 @@ jobs:
 
       - name: Build and restart
         run: |
-          ssh "$TARGET" "cd $DIR/app && docker compose -p ahmadkoye --env-file ../.env up -d --build --remove-orphans && docker image prune -f"
+          ssh "$TARGET" "cd $DIR/app && docker compose -p ahmadkoye --env-file ../.env up -d --build --remove-orphans && docker image prune -f --filter label=com.docker.compose.project=ahmadkoye"
 
       - name: Check the site answers
         run: |
-          ssh "$TARGET" 'cd '"$DIR"'/app && for i in $(seq 1 30); do
-              docker compose -p ahmadkoye exec -T website wget -qO- http://127.0.0.1:3000/api/status && exit 0
+          ssh "$TARGET" 'for i in $(seq 1 30); do
+              curl -fsS http://127.0.0.1:8083/api/status && exit 0
               sleep 2
-            done; docker compose -p ahmadkoye logs --tail 50 website; exit 1'
+            done; cd '"$DIR"'/app && docker compose -p ahmadkoye logs --tail 50 website; exit 1'

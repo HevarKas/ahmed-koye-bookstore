@@ -1,4 +1,6 @@
-# Production setup on the server. Run with: docker compose -p ahmadkoye --env-file ../.env up -d --build
+# Production on the shared server. The server's own Caddy (/etc/caddy/Caddyfile) serves
+# https://ahmadkoye.com and forwards to 127.0.0.1:8083; see deploy/caddy-site.conf.
+# Run with: docker compose -p ahmadkoye --env-file ../.env up -d --build
 # (the GitHub deploy workflow does this automatically on every push to main).
 services:
   website:
@@ -6,25 +8,11 @@ services:
     restart: unless-stopped
     environment:
       - SYNC_TOKEN=${SYNC_TOKEN}
+    ports:
+      - '127.0.0.1:8083:3000'
     volumes:
       # The synced book list lives here and survives rebuilds and restarts.
       - catalog-data:/data
 
-  caddy:
-    image: caddy:2.8.4-alpine
-    restart: unless-stopped
-    ports:
-      - '80:80'
-      - '443:443'
-      - '443:443/udp'
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy-data:/data
-      - caddy-config:/config
-    depends_on:
-      - website
-
 volumes:
   catalog-data:
-  caddy-data:
-  caddy-config:
